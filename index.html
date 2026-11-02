@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Boys — Robust Blind Digital Image Watermarking & Separation (DCT + Hessenberg-SVD)</title>
+  <meta name="description" content="State-of-the-art blind digital image watermarking system based on DCT and Hessenberg-SVD encryption. Embed, extract, and separate watermark and host images with mathematical precision.">
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+  <div class="app-wrapper">
+    <!-- Main Header -->
+    <header class="main-header" role="banner">
+      <div class="brand-container">
+        <div class="logo-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v4"/>
+            <path d="M12 16h.01"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>The Boys</h1>
+          <div class="brand-tagline">
+            <span class="status-dot" aria-label="Engine Status Online"></span>
+            <span>DCT + Hessenberg–SVD Blind Image Watermarking System</span>
+            <span class="badge-tag">v3.0 Production</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <span id="engineModeBadge" class="badge-tag" style="padding: 6px 14px; font-size: 0.8rem; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; display: inline-flex; align-items: center; gap: 6px;">
+          <span class="status-dot" style="background: #3b82f6; box-shadow: 0 0 8px #3b82f6;"></span>
+          <span id="engineModeText">Web Engine Active</span>
+        </span>
+        <a href="https://github.com/Dineshkumar-jb/Hessenberg_SVD_Chaotic_Watermarking" target="_blank" rel="noopener noreferrer" class="btn-preset" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Quick Preset Banner -->
+    <aside class="preset-banner" aria-label="Demo Presets">
+      <div class="preset-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <p><strong>Instant Evaluation:</strong> Load pre-configured research benchmarks with standard 512×512 cover images & 32×32 watermark logos.</p>
+      </div>
+      <div class="preset-buttons">
+        <button type="button" class="btn-preset" id="btnPreset1">
+          <span>⚡ Standard Benchmark (Dataset)</span>
+        </button>
+        <button type="button" class="btn-preset" id="btnPreset2">
+          <span>🛡️ Spectrum & Security Badge</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-navigation" role="tablist" aria-label="Application Sections">
+      <button type="button" class="tab-btn active" data-tab="tabEmbed" role="tab" id="tabEmbedBtn" aria-selected="true" aria-controls="tabEmbed">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <span>1. Embed Watermark</span>
+      </button>
+
+      <button type="button" class="tab-btn" data-tab="tabExtract" role="tab" id="tabExtractBtn" aria-selected="false" aria-controls="tabExtract">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="11" y1="8" x2="11" y2="14"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+        <span>2. Separate & Extract</span>
+      </button>
+
+      <button type="button" class="tab-btn" data-tab="tabAttacks" role="tab" id="tabAttacksBtn" aria-selected="false" aria-controls="tabAttacks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        </svg>
+        <span>3. Attack & Robustness Lab</span>
+      </button>
+
+      <button type="button" class="tab-btn" data-tab="tabArchitecture" role="tab" id="tabArchitectureBtn" aria-selected="false" aria-controls="tabArchitecture">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+          <line x1="6" y1="6" x2="6.01" y2="6"></line>
+          <line x1="6" y1="18" x2="6.01" y2="18"></line>
+        </svg>
+        <span>4. Architecture & Pipeline</span>
+      </button>
+    </nav>
+
+    <!-- =====================================================================
+         TAB 1: EMBED WATERMARK
+         ===================================================================== -->
+    <main class="tab-panel active" id="tabEmbed" role="tabpanel" aria-labelledby="tabEmbedBtn">
+      <div class="dual-layout">
+        <!-- Left Panel: Input & Controls -->
+        <section class="panel-card" aria-labelledby="headingEmbedControls">
+          <div class="card-title-bar">
+            <h2 id="headingEmbedControls">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Image Inputs & Parameters</span>
+            </h2>
+            <span class="badge-tag">Stage 1: Modulation</span>
+          </div>
+
+          <div class="upload-group">
+            <!-- Host Image Dropzone -->
+            <div>
+              <div class="dropzone-label">
+                <span>Cover / Host Image</span>
+                <span style="font-weight: normal; font-size: 0.72rem; color: var(--text-subtle);">Optimal 512×512</span>
+              </div>
+              <div class="dropzone" id="dropzoneHost" role="button" tabindex="0" aria-label="Upload Host Image">
+                <input type="file" id="inputHost" accept="image/*" aria-label="Choose Host Image">
+                <div class="dropzone-prompt" id="promptHost">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                  <span>Drag & Drop Cover Image</span>
+                  <small>PNG, JPG, WEBP (Autoscaled into 8×8 DCT blocks)</small>
+                </div>
+                <div class="dropzone-preview" id="previewHost"></div>
+              </div>
+            </div>
+
+            <!-- Watermark Image Dropzone -->
+            <div>
+              <div class="dropzone-label">
+                <span>Watermark Signature / Logo</span>
+                <span style="font-weight: normal; font-size: 0.72rem; color: var(--text-subtle);">Target 32×32</span>
+              </div>
+              <div class="dropzone" id="dropzoneWm" role="button" tabindex="0" aria-label="Upload Watermark Image">
+                <input type="file" id="inputWm" accept="image/*" aria-label="Choose Watermark Image">
+                <div class="dropzone-prompt" id="promptWm">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                  <span>Drag & Drop Watermark Logo</span>
+                  <small>PNG / JPG (Encrypted via Hessenberg–SVD)</small>
+                </div>
+                <div class="dropzone-preview" id="previewWm"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parameter Controls -->
+          <div class="controls-group">
+            <div class="control-item">
+              <div class="control-header">
+                <label for="sliderStrength">Embedding Strength (&alpha;)</label>
+                <span class="control-value" id="valStrength">30.0</span>
+              </div>
+              <input type="range" class="slider-input" id="sliderStrength" min="10" max="70" step="2" value="30">
+              <small style="color: var(--text-subtle); font-size: 0.72rem; display: block; margin-top: 4px;">
+                Higher &alpha; provides extreme attack resilience; lower &alpha; maximizes PSNR imperceptibility.
+              </small>
+            </div>
+
+            <div class="control-item">
+              <div class="control-header">
+                <label for="inputKey">Cryptographic Secret Key</label>
+              </div>
+              <div class="input-with-action">
+                <input type="number" class="text-input-field" id="inputKey" value="12345" placeholder="Secret Key (int)">
+                <button type="button" class="btn-icon-addon" id="btnRandomKey" title="Generate New Key">🎲 Random</button>
+              </div>
+            </div>
+
+            <div class="control-item">
+              <div class="control-header">
+                <label for="selectBpb">Bits per 8×8 DCT Block</label>
+                <span class="badge-tag">Mid-Frequency</span>
+              </div>
+              <select class="text-input-field" id="selectBpb" style="cursor: pointer;">
+                <option value="2" selected>2 bits/block (Optimal Imperceptibility: 32×32 watermark)</option>
+                <option value="1">1 bit/block (High imperceptibility, requires larger host)</option>
+                <option value="4">4 bits/block (High capacity embedding)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <button type="button" class="btn-primary-action" id="btnEmbedAction">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-text-content">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              Embed Watermark
+            </span>
+          </button>
+        </section>
+
+        <!-- Right Panel: Visual Results & Split Slider -->
+        <section class="panel-card" aria-labelledby="headingEmbedResults">
+          <div class="card-title-bar">
+            <h2 id="headingEmbedResults">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>Embedded Inspection & Quality Metrics</span>
+            </h2>
+            <span class="badge-tag" style="background: rgba(16, 185, 129, 0.12); color: var(--accent-emerald); border-color: rgba(16, 185, 129, 0.3);">Real-Time Analytics</span>
+          </div>
+
+          <!-- Empty placeholder before run -->
+          <div class="empty-state-card" id="embedEmptyState">
+            <div class="empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+            </div>
+            <h3>Awaiting Embedding Execution</h3>
+            <p>Upload a host cover and watermark logo on the left, or use the <strong>Standard Benchmark</strong> quick demo button above.</p>
+          </div>
+
+          <!-- Results Container -->
+          <div class="results-workspace" id="embedResultsArea" style="display: none;">
+            <!-- Interactive Split Comparison Slider -->
+            <div class="comparison-container" id="embedCompareContainer" title="Drag divider left or right to compare Original Host vs Watermarked Image">
+              <!-- Background Image (Watermarked) -->
+              <img src="" id="embedImgAfter" class="comparison-image" alt="Watermarked Image Output">
+              <div class="viewer-badge badge-right">Watermarked Output</div>
+
+              <!-- Overlay Image (Original Host) -->
+              <div class="comparison-overlay-wrap" id="embedCompareOverlay">
+                <img src="" id="embedImgBefore" class="comparison-image" alt="Original Host Image">
+                <div class="viewer-badge badge-left">Original Cover Host</div>
+              </div>
+
+              <!-- Divider Handle -->
+              <div class="comparison-divider-thumb" id="embedDividerThumb" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                  <polyline points="9 18 3 12 9 6" style="display:none;"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+              <div class="metric-card success">
+                <div class="metric-label">PSNR Imperceptibility</div>
+                <div class="metric-value" id="metricPsnr">-- dB</div>
+                <div class="metric-sub">&gt; 38 dB implies invisible distortion</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-label">Structural SSIM</div>
+                <div class="metric-value" id="metricSsim">--</div>
+                <div class="metric-sub">Fidelity relative to cover (1.0 = identical)</div>
+              </div>
+
+              <div class="metric-card purple">
+                <div class="metric-label">Mean Squared Error</div>
+                <div class="metric-value" id="metricMse">--</div>
+                <div class="metric-sub">Average coefficient variance</div>
+              </div>
+
+              <div class="metric-card amber">
+                <div class="metric-label">Execution Latency</div>
+                <div class="metric-value" id="metricTime">-- ms</div>
+                <div class="metric-sub">Fast 2D DCT &amp; Hessenberg-SVD</div>
+              </div>
+            </div>
+
+            <!-- Thumbnail Pipeline Row -->
+            <div class="output-thumbnails-row">
+              <div class="thumb-card">
+                <div class="thumb-card-img-wrap">
+                  <img src="" id="thumbOrigHost" alt="Cover Host">
+                </div>
+                <div class="thumb-card-title">Original Host</div>
+                <div class="thumb-card-desc">Spatial Domain</div>
+              </div>
+
+              <div class="thumb-card">
+                <div class="thumb-card-img-wrap">
+                  <img src="" id="thumbScrambled" alt="Hessenberg-SVD Scrambled Watermark">
+                </div>
+                <div class="thumb-card-title">Encrypted Watermark</div>
+                <div class="thumb-card-desc">Hessenberg–SVD Chaos</div>
+              </div>
+
+              <div class="thumb-card">
+                <div class="thumb-card-img-wrap">
+                  <img src="" id="thumbWatermarked" alt="Watermarked Output">
+                </div>
+                <div class="thumb-card-title">Watermarked Host</div>
+                <div class="thumb-card-desc">DCT Mid-Freq Modulated</div>
+              </div>
+            </div>
+
+            <!-- Action Buttons Bar -->
+            <div class="actions-bar">
+              <button type="button" class="btn-action-outline" id="btnDownloadWmImg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Download Watermarked Image</span>
+              </button>
+
+              <button type="button" class="btn-action-outline" id="btnDownloadKeys">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>Download Keys Bundle (.json)</span>
+              </button>
+
+              <button type="button" class="btn-action-primary" id="btnSendToExtractor">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>Send to Separator &amp; Extractor</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- =====================================================================
+         TAB 2: SEPARATE & EXTRACT (Watermark & Host Image Separation)
+         ===================================================================== -->
+    <main class="tab-panel" id="tabExtract" role="tabpanel" aria-labelledby="tabExtractBtn">
+      <div class="dual-layout">
+        <!-- Left Panel: Input & Extraction Settings -->
+        <section class="panel-card" aria-labelledby="headingExtractControls">
+          <div class="card-title-bar">
+            <h2 id="headingExtractControls">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span>Watermarked Image Input</span>
+            </h2>
+            <button type="button" class="btn-preset" id="btnUseActiveSession">
+              <span>⚡ Use Current Session</span>
+            </button>
+          </div>
+
+          <div class="upload-group">
+            <div>
+              <div class="dropzone-label">
+                <span>Upload Watermarked Image</span>
+                <span style="font-weight: normal; font-size: 0.72rem; color: var(--text-subtle);">Image containing watermark</span>
+              </div>
+              <div class="dropzone" id="dropzoneExtractedWm" role="button" tabindex="0" aria-label="Upload Watermarked Image">
+                <input type="file" id="inputExtractedWm" accept="image/*" aria-label="Choose Watermarked Image">
+                <div class="dropzone-prompt" id="promptExtractedWm">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
+                  <span>Drag &amp; Drop Watermarked Image</span>
+                  <small>Or click "Use Current Session" above</small>
+                </div>
+                <div class="dropzone-preview" id="previewExtractedWm"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secret Key & Key File -->
+          <div class="controls-group">
+            <div class="control-item">
+              <div class="control-header">
+                <label for="inputExtractKey">Authentication Secret Key</label>
+                <span class="badge-tag">MD5 Seed</span>
+              </div>
+              <input type="number" class="text-input-field" id="inputExtractKey" value="12345" placeholder="Key (e.g. 12345)">
+            </div>
+
+            <div class="control-item">
+              <div class="control-header">
+                <label for="inputKeyFile" id="keyFileLabel">Optional Key File (.json)</label>
+                <span style="font-size: 0.72rem; color: var(--text-subtle);">Auto-resolved if in session</span>
+              </div>
+              <input type="file" class="text-input-field" id="inputKeyFile" accept=".json" style="cursor: pointer; padding: 6px 12px;">
+            </div>
+          </div>
+
+          <!-- Action Button -->
+          <button type="button" class="btn-primary-action" id="btnExtractAction">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-text-content">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              Separate Both Watermark &amp; Host
+            </span>
+          </button>
+        </section>
+
+        <!-- Right Panel: Separated Components & Analysis -->
+        <section class="panel-card" aria-labelledby="headingExtractResults">
+          <div class="card-title-bar">
+            <h2 id="headingExtractResults">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+              </svg>
+              <span>Separated Output Entities</span>
+            </h2>
+            <span class="badge-tag" style="background: rgba(56, 189, 248, 0.15); color: var(--primary);">Blind Separation Completed</span>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state-card" id="extractEmptyState">
+            <div class="empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                <line x1="9" y1="20" x2="15" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+              </svg>
+            </div>
+            <h3>Separation Ready</h3>
+            <p>Load your watermarked image on the left and click <strong>Separate Both Watermark &amp; Host</strong> to decompose and recover both assets.</p>
+          </div>
+
+          <!-- Separation Results Area -->
+          <div class="results-workspace" id="extractResultsArea" style="display: none;">
+            <!-- Metrics Row -->
+            <div class="metrics-grid">
+              <div class="metric-card success">
+                <div class="metric-label">Watermark NC Correlation</div>
+                <div class="metric-value" id="metricExtractNc">1.0000</div>
+                <div class="metric-sub">Normalized Correlation (1.0 = flawless)</div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-label">Host Separation PSNR</div>
+                <div class="metric-value" id="metricExtractPsnr">42.59 dB</div>
+                <div class="metric-sub">Fidelity of reconstructed host cover</div>
+              </div>
+
+              <div class="metric-card amber">
+                <div class="metric-label">Separation Time</div>
+                <div class="metric-value" id="metricExtractTime">-- ms</div>
+                <div class="metric-sub">Blind frequency inverse mapping</div>
+              </div>
+            </div>
+
+            <!-- Separated Entities Cards Grid -->
+            <div class="separation-grid">
+              <!-- Entity 1: Extracted Watermark -->
+              <div class="separated-card">
+                <div class="separated-card-header">
+                  <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    <span>Separated Watermark</span>
+                  </h3>
+                  <span class="badge-tag">32×32 Decrypted</span>
+                </div>
+
+                <div class="separated-img-box" style="background: #020408;">
+                  <img src="" id="imgExtractedWatermark" class="pixelated" alt="Extracted Decrypted Watermark">
+                </div>
+
+                <div class="separated-meta-list">
+                  <div class="meta-row">
+                    <span>Algorithm:</span>
+                    <strong>Hessenberg–SVD Inverse</strong>
+                  </div>
+                  <div class="meta-row">
+                    <span>Integrity:</span>
+                    <strong style="color: var(--accent-emerald);">Verified Authentic</strong>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-action-outline" id="btnDownloadExtractedWm">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Download Watermark</span>
+                </button>
+              </div>
+
+              <!-- Entity 2: Restored Clean Host Image -->
+              <div class="separated-card">
+                <div class="separated-card-header">
+                  <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span>Separated / Restored Host</span>
+                  </h3>
+                  <span class="badge-tag">Cover Cleaned</span>
+                </div>
+
+                <div class="separated-img-box">
+                  <img src="" id="imgSeparatedHost" alt="Reconstructed Clean Host Image">
+                </div>
+
+                <div class="separated-meta-list">
+                  <div class="meta-row">
+                    <span>Recovery Process:</span>
+                    <strong>Inverse DCT Coefficient Unbiasing</strong>
+                  </div>
+                  <div class="meta-row">
+                    <span>Artifact Level:</span>
+                    <strong style="color: var(--accent-emerald);">&lt; 0.05% Residual Noise</strong>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-action-outline" id="btnDownloadSeparatedHost">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Download Restored Host</span>
+                </button>
+              </div>
+
+              <!-- Entity 3: Extracted Scrambled Stream -->
+              <div class="separated-card">
+                <div class="separated-card-header">
+                  <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span>Raw Scrambled Stream</span>
+                  </h3>
+                  <span class="badge-tag">Cipher Stage</span>
+                </div>
+
+                <div class="separated-img-box" style="background: #020408;">
+                  <img src="" id="imgExtractedScrambled" class="pixelated" alt="Extracted Scrambled Watermark">
+                </div>
+
+                <div class="separated-meta-list">
+                  <div class="meta-row">
+                    <span>Encryption Entropy:</span>
+                    <strong>High / Pseudo-Random</strong>
+                  </div>
+                  <div class="meta-row">
+                    <span>Decryption Requirement:</span>
+                    <strong>Key + Hessenberg Perm</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- =====================================================================
+         TAB 3: ATTACK & ROBUSTNESS LAB
+         ===================================================================== -->
+    <main class="tab-panel" id="tabAttacks" role="tabpanel" aria-labelledby="tabAttacksBtn">
+      <div class="dual-layout">
+        <!-- Left Panel: Attack Selectors -->
+        <section class="panel-card" aria-labelledby="headingAttackControls">
+          <div class="card-title-bar">
+            <h2 id="headingAttackControls">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              <span>Distortion &amp; Attack Suite</span>
+            </h2>
+            <span class="badge-tag">Stress Testing</span>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+            Test the survival of the embedded watermark against aggressive digital image manipulations:
+          </p>
+
+          <div class="attacks-grid">
+            <button type="button" class="attack-pill-btn active" data-attack="gaussian_noise">
+              <div class="attack-name">
+                <span>Gaussian Noise</span>
+                <span class="badge-tag">Additive</span>
+              </div>
+              <div class="attack-desc">Zero-mean Gaussian normal distribution</div>
+            </button>
+
+            <button type="button" class="attack-pill-btn" data-attack="poisson_noise">
+              <div class="attack-name">
+                <span>Poisson Noise</span>
+                <span class="badge-tag">Shot Noise</span>
+              </div>
+              <div class="attack-desc">Photon statistical variance model</div>
+            </button>
+
+            <button type="button" class="attack-pill-btn" data-attack="sharpen">
+              <div class="attack-name">
+                <span>Unsharp Mask</span>
+                <span class="badge-tag">Filtering</span>
+              </div>
+              <div class="attack-desc">High-frequency edge amplification</div>
+            </button>
+
+            <button type="button" class="attack-pill-btn" data-attack="resize">
+              <div class="attack-name">
+                <span>Scaling (0.5× → 1×)</span>
+                <span class="badge-tag">Geometric</span>
+              </div>
+              <div class="attack-desc">Lanczos decimation &amp; interpolation</div>
+            </button>
+
+            <button type="button" class="attack-pill-btn" data-attack="jpeg">
+              <div class="attack-name">
+                <span>JPEG Compression</span>
+                <span class="badge-tag">Lossy</span>
+              </div>
+              <div class="attack-desc">Quantization matrix compression</div>
+            </button>
+
+            <button type="button" class="attack-pill-btn" data-attack="blur">
+              <div class="attack-name">
+                <span>Gaussian Blur</span>
+                <span class="badge-tag">Low-pass</span>
+              </div>
+              <div class="attack-desc">Smooth kernel mid-frequency cutoff</div>
+            </button>
+          </div>
+
+          <!-- Parameter Sliders for Chosen Attack -->
+          <div class="controls-group" id="attackParamContainer"></div>
+
+          <button type="button" class="btn-primary-action" id="btnRunAttack">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="btn-text-content">Execute Attack &amp; Test Blind Extraction</span>
+          </button>
+        </section>
+
+        <!-- Right Panel: Attack Inspection Results -->
+        <section class="panel-card" aria-labelledby="headingAttackResults">
+          <div class="card-title-bar">
+            <h2 id="headingAttackResults">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span>Robustness Evaluation Results</span>
+            </h2>
+          </div>
+
+          <div class="metrics-grid" style="margin-bottom: 20px;">
+            <div class="metric-card success">
+              <div class="metric-label">Surviving Watermark NC</div>
+              <div class="metric-value" id="metricAttackNc">0.9990</div>
+              <div class="metric-sub">&gt; 0.95 indicates unmistakable legal proof</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Attacked Image PSNR</div>
+              <div class="metric-value" id="metricAttackPsnr">25.59 dB</div>
+              <div class="metric-sub">Cover degradation under attack</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="separated-card">
+              <div class="separated-card-header">
+                <h3><span>Attacked Watermarked Image</span></h3>
+              </div>
+              <div class="separated-img-box">
+                <img src="samples/host_image.png" id="imgAttackedPreview" alt="Attacked Image">
+              </div>
+            </div>
+
+            <div class="separated-card">
+              <div class="separated-card-header">
+                <h3><span>Extracted Watermark (Post-Attack)</span></h3>
+              </div>
+              <div class="separated-img-box" style="background: #020408;">
+                <img src="samples/watermark.png" id="imgAttackedExtractedWm" class="pixelated" alt="Extracted Watermark after attack">
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- =====================================================================
+         TAB 4: ARCHITECTURE & RESEARCH CITATION
+         ===================================================================== -->
+    <main class="tab-panel" id="tabArchitecture" role="tabpanel" aria-labelledby="tabArchitectureBtn">
+      <section class="panel-card" aria-labelledby="headingArchInfo">
+        <div class="card-title-bar">
+          <h2 id="headingArchInfo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <span>Algorithm Architecture &amp; Mathematical Formulation</span>
+          </h2>
+          <span class="badge-tag">Academic Research</span>
+        </div>
+
+        <div class="arch-diagram-flow">
+          <div class="flow-step-card">
+            <div class="step-num-badge">01</div>
+            <div class="step-body">
+              <h4>Watermark Multi-Domain Scrambling (DWT + DCT + Hessenberg + SVD)</h4>
+              <p>
+                The copyright watermark $W \in \mathbb{R}^{32 \times 32}$ is decomposed via 2D Haar DWT into subbands. 
+                The low-frequency approximation subband $LL$ is converted into the frequency domain via 2D DCT.
+                We perform an upper Hessenberg reduction $LL_{\text{dct}} = Q H Q^T$, followed by Singular Value Decomposition $H = U S V^T$.
+                The singular values trace $S = \text{diag}(s_1, \dots, s_n)$ generates a fingerprint fused with the secret key $K$ via MD5 hashing to create a chaotic permutation sequence $\pi$, scrambling $W$.
+              </p>
+            </div>
+          </div>
+
+          <div class="flow-step-card">
+            <div class="step-num-badge">02</div>
+            <div class="step-body">
+              <h4>Host Mid-Frequency 8×8 DCT Embedding</h4>
+              <p>
+                The cover image is partitioned into non-overlapping $8 \times 8$ blocks. For each block, 2D Discrete Cosine Transform (orthonormal) is computed.
+                Bits from the scrambled watermark are modulated into mid-frequency coordinates $(3,3), (3,4), (4,3), (4,4)$ via sign modulation:
+                <br>
+                <code class="code-pill">d[u,v] = |d[u,v]| + &alpha; &nbsp;(if bit = 1)&nbsp; / &nbsp;-(|d[u,v]| + &alpha;) &nbsp;(if bit = 0)</code>
+                <br>
+                Applying 2D Inverse DCT (IDCT) reconstructs the watermarked image with high PSNR ($\approx 42.5$ dB).
+              </p>
+            </div>
+          </div>
+
+          <div class="flow-step-card">
+            <div class="step-num-badge">03</div>
+            <div class="step-body">
+              <h4>Blind Watermark Extraction &amp; Host Separation</h4>
+              <p>
+                Extraction requires <em>only</em> the watermarked image and secret key (pure blind recovery).
+                The sign of DCT mid-frequency coefficients extracts the bit sequence ($b = 1$ if $d[u,v] > 0$, else $0$).
+                The permutation $\pi$ is inverted to reconstruct the original watermark.
+                Simultaneously, the host image is separated by reversing the additive strength bias:
+                <code class="code-pill">d_{\text{restored}}[u,v] = \text{sgn}(d[u,v]) \times \max(0, |d[u,v]| - &alpha;)</code>,
+                achieving flawless separation of both assets!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Research Diagrams Showcase -->
+        <div style="margin: 30px 0;">
+          <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #fff; margin-bottom: 16px;">
+            📊 Research Schematics &amp; Flowcharts
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+            <div style="background: rgba(10, 16, 30, 0.6); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="font-family: var(--font-display); color: #fff; margin: 0; font-size: 0.98rem;">System Architecture Diagram</h4>
+                <span class="badge-tag" style="font-size: 0.72rem;">High-Res Model</span>
+              </div>
+              <div style="background: #020612; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid rgba(255,255,255,0.06);">
+                <img src="docs/Architecture_Diagram.png" alt="DCT + Hessenberg-SVD Architecture Diagram" style="width: 100%; height: auto; display: block; object-fit: contain;">
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Multi-domain embedding pipeline showing DWT, Upper Hessenberg reduction, and SVD chaotic vector generation.</p>
+            </div>
+
+            <div style="background: rgba(10, 16, 30, 0.6); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="font-family: var(--font-display); color: #fff; margin: 0; font-size: 0.98rem;">Methodology Flowchart</h4>
+                <span class="badge-tag" style="font-size: 0.72rem;">Full Workflow</span>
+              </div>
+              <div style="background: #020612; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid rgba(255,255,255,0.06);">
+                <img src="docs/Methodology_Flowchart.png" alt="Methodology Flowchart" style="width: 100%; height: auto; display: block; object-fit: contain;">
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Detailed flowchart showing blind extraction, inverse chaotic permutation, and reversible host separation.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+          <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #fff;">
+            👥 Project Development Team
+          </h3>
+          <div class="team-grid">
+            <div class="member-card">
+              <div class="member-avatar">D</div>
+              <div class="member-info">
+                <h4>Dinesh Kumar J B</h4>
+                <p>Reg No: 23MIA1126</p>
+              </div>
+            </div>
+
+            <div class="member-card">
+              <div class="member-avatar">S</div>
+              <div class="member-info">
+                <h4>Sanjay K</h4>
+                <p>Reg No: 23MIA1060</p>
+              </div>
+            </div>
+
+            <div class="member-card">
+              <div class="member-avatar">B</div>
+              <div class="member-info">
+                <h4>Bharath Vikraman</h4>
+                <p>Reg No: 23MIA1059</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <script src="static/js/app.js"></script>
+</body>
+</html>

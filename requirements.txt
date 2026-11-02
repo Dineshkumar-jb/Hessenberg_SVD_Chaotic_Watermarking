@@ -1,0 +1,12 @@
+# AURA MARK - Core Production Dependencies
+Flask>=3.0.0,<4.0.0
+Flask-Cors>=4.0.0
+numpy>=1.24.0
+Pillow>=10.0.0
+PyWavelets>=1.4.0
+scipy>=1.10.0
+
+# Optional Testing and Notebook Dependencies
+# pytest>=7.0.0
+# matplotlib>=3.7.0
+# jupyter>=1.0.0
